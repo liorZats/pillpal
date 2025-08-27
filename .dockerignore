@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+.next
+
+# Environment files
+.env
+.env.*
+
+# Development files
+.git
+.gitignore
+README.md
+*.log
+
+# IDE files
+.vscode
+.idea
