@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  profiles  Profile[]
+  schedules Schedule[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  wakeTime    String
+  sleepTime   String
+  meals       Json[]   // Array of meal objects
+  fasting     Int?     // Optional fasting hours
+  sensitivities String[] // Array of sensitivity strings
+  medications String[] // Array of medication strings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Supplement {
+  id          String   @id
+  name        String
+  dailyDoses  Json[]   // Array of dose objects
+  withFood    Boolean?
+  timing      String?  // "AM" or "PM"
+  notes       String?
+  items       ScheduleItem[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("supplements")
+}
+
+model KnowledgeBaseSnippet {
+  id       String   @id
+  content  String
+  type     String   // Enum: WITH_FOOD, EMPTY_STOMACH, etc.
+  tags     String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("kb_snippets")
+}
+
+model Schedule {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  date      DateTime
+  slots     ScheduleSlot[]
+  warnings  String[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("schedules")
+}
+
+model ScheduleSlot {
+  id         String         @id @default(cuid())
+  scheduleId String
+  schedule   Schedule       @relation(fields: [scheduleId], references: [id])
+  time       String
+  withMeal   Boolean
+  mealType   String?
+  warnings   String[]
+  items      ScheduleItem[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@map("schedule_slots")
+}
+
+model ScheduleItem {
+  id            String       @id @default(cuid())
+  slotId        String
+  slot          ScheduleSlot @relation(fields: [slotId], references: [id])
+  supplementId  String
+  supplement    Supplement   @relation(fields: [supplementId], references: [id])
+  dose         Json        // Dose object
+  note         String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("schedule_items")
+}
